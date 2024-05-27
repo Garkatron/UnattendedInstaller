@@ -1,0 +1,16 @@
+import { HorizontalBox } from "std-widgets.slint";
+export component Hs {
+    in property <color> background;
+    in property <LayoutAlignment> alignment;
+    HorizontalBox {
+        width: parent.width;
+        height: parent.height;
+        alignment: alignment;
+        Rectangle {
+            background: background;
+            width: parent.width;
+            height: parent.height;
+        }
+    }
+
+}

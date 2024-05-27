@@ -1,0 +1,157 @@
+import { ProgramCheckBox } from "ProgramCheckBox.slint";
+import { OwnTable } from "OwnTable.slint";
+import { Spacer } from "Spacer.slint";
+import { Hs } from "Hs.slint";
+import { GridBox, Button, VerticalBox, HorizontalBox, ScrollView, StandardTableView, Switch, LineEdit } from "std-widgets.slint";
+import { AppInfo } from "AppInfo.slint";
+
+export component AppWindow inherits Window {
+    
+    preferred-height: 500px;
+    preferred-width: 800px;
+    title: "Ordenatech Installer";
+    no-frame: false;
+    always-on-top: false;
+    
+    in-out property <[AppInfo]> programs: [];
+    in-out property <bool> have_internet;
+    in-out property <bool> unattended : true;
+    in-out property <bool> online;
+    callback research() -> [AppInfo];
+    callback install([AppInfo], bool, bool);
+    callback search_local() -> [AppInfo];
+    callback check_internet() -> bool;
+    callback create_admin(string, string) -> string;
+    in-out property <string> admin_name: "";
+    in-out property <string> admin_password: "";
+    in-out property <string> user_created: "";
+
+    VerticalBox {
+
+        alignment: start;
+        Text{text:"Instalacion desatentidad"; font-size: 25px; horizontal-alignment: center;}
+            
+        VerticalBox {
+            HorizontalBox {
+                alignment: start;
+                Text{text:"Opciones"; font-size: 20px;}
+                spacing: 167px;
+                Text{text:"Programas"; font-size: 20px;}
+            }
+
+            HorizontalBox {
+                height: 400px;
+                width: 100%;
+                Rectangle {
+                    //background: red;
+                    width: 30%;
+
+                    ScrollView {
+                        VerticalBox {
+                         
+                            alignment: start;
+    
+                            HorizontalBox {
+                                alignment: start;
+                                OnlineSwitch := Switch {
+                                text:"Modo Online"; 
+                                checked: have_internet;
+                                enabled: have_internet;
+                                toggled => { online = self.checked;  }
+                                }
+                            }
+
+                            HorizontalBox {
+                                alignment: start;
+                                Button {
+                                    text: "Checkear Internet";
+                                    clicked => { have_internet = check_internet() }
+                                }
+                            }
+
+                            HorizontalBox {
+                                alignment: start;
+                                    ProgramCheckBox {
+                                        name: "Desatendido";
+                                        checked: true;
+                                        toggled => { unattended = self.checked;}
+                                }
+                            }
+                            HorizontalBox {
+                                alignment: start;
+                                Button {
+                                    text: "Programas Incluidos";
+                                    clicked => { programs = search_local() }
+                                }
+                            }
+
+                           HorizontalBox {
+                            alignment: start;
+
+                                admin_name_input := LineEdit { font-size: 10px; placeholder-text: "Name"; text: admin_name; width: 90px;}
+
+
+                                admin_pass_input := LineEdit { font-size: 10px; placeholder-text: "Password"; text: admin_password; width: 90px; }
+
+                            }
+                            HorizontalBox {
+                                alignment: start;
+                                TextInput {text: user_created;}
+
+                            }
+                            HorizontalBox {
+                                alignment: start;
+                                Button {
+                                    text: "Crear Admin";
+                                    clicked => {
+                                        admin_name = admin_name_input.text;
+                                        admin_password = admin_pass_input.text;
+                                        user_created = create_admin(admin_name, admin_password);
+                                        admin_name_input.text = "";
+                                        admin_pass_input.text = "";
+                                        //self.enabled = (user_created=="Creado") ? false : true;
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Rectangle {
+                    width: 68%;
+                    //background: purple;
+                    HorizontalBox {
+                        width: 100%;
+                        VerticalBox {
+                            width: 100%;
+                            ScrollView {
+                                width: 100%;
+                                VerticalBox {
+                                    for program[i] in programs : ProgramCheckBox {
+                                        name: program.name;
+                                        checked: false;
+                                        toggled => {program.install = !program.install}
+                                    }
+                                }
+                            }
+                            HorizontalBox {
+                                Button {text: "Buscar en red";
+                                    enabled: OnlineSwitch.checked && have_internet;
+                                    clicked => {
+                                        programs = research()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Button {text: "Instalar"; enabled: true;
+            clicked => {
+                //popup.show();
+                install(programs, unattended, online)
+            }
+        }
+    }
+}

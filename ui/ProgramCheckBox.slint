@@ -1,0 +1,19 @@
+import { CheckBox, HorizontalBox } from "std-widgets.slint";
+export component ProgramCheckBox {
+    in property <string> name;
+    in property <bool> checked;
+    callback toggled();
+
+    HorizontalBox {
+        alignment: start;
+        CheckBox 
+        {   
+            text: name;
+            checked: checked;
+            toggled => {toggled()}
+            
+        }
+    }
+    
+
+}
